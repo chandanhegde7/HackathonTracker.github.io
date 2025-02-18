@@ -1,94 +1,114 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hackathon Tracker</title>
-        <link rel="stylesheet" href="assets/style.css">
-        <script defer src="scripts/main.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-    </head>
-    <body>
-        <header>
-            <h1>Hackathon Tracker</h1>
-            <p>Find and track upcoming hackathons in India!</p>
-            <a href="https://github.com/chandanhegde7/HackathonTracker.github.io/pulls" target="_blank" class="btn">Submit a Hackathon</a>
-        </header>
-        
-        <section id="filters">
-            <h2>Filter by Tags</h2>
-            <div id="tag-filters">
-                <button class="filter-btn" data-tag="all">All</button>
-                <button class="filter-btn" data-tag="cybersecurity">Cybersecurity</button>
-                <button class="filter-btn" data-tag="ai/ml">AI/ML</button>
-                <button class="filter-btn" data-tag="offline">Offline</button>
-                <button class="filter-btn" data-tag="online">Online</button>
-                <button class="filter-btn" data-tag="general">General</button>
-            </div>
-        </section>
-        
-        <section id="hackathon-list">
-            <h2>Upcoming Hackathons</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Deadline</th>
-                        <th>Location</th>
-                        <th>Tags</th>
-                        <th>Countdown</th>
-                    </tr>
-                </thead>
-                <tbody id="hackathons"></tbody>
-            </table>
-        </section>
-        
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                fetch("assets/data/hackathons.yml")
-                    .then(response => response.text())
-                    .then(data => {
-                        const hackathons = jsyaml.load(data);
-                        displayHackathons(hackathons);
-                    });
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Tracker</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <script defer src="scripts/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Hackathon Tracker</h1>
+        <p>Find and track upcoming hackathons in India!</p>
+        <a href="https://github.com/chandanhegde7/HackathonTracker.github.io/pulls" target="_blank" class="btn">Submit a Hackathon</a>
+    </header>
+    
+    <section id="filters">
+        <h2>Filter by Tags</h2>
+        <div id="tag-filters">
+            <button class="filter-btn" data-tag="all">All</button>
+            <button class="filter-btn" data-tag="cybersecurity">Cybersecurity</button>
+            <button class="filter-btn" data-tag="ai/ml">AI/ML</button>
+            <button class="filter-btn" data-tag="offline">Offline</button>
+            <button class="filter-btn" data-tag="online">Online</button>
+            <button class="filter-btn" data-tag="general">General</button>
+        </div>
+    </section>
+    
+    <section id="hackathon-list">
+        <h2>Upcoming Hackathons</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Deadline</th>
+                    <th>Location</th>
+                    <th>Tags</th>
+                    <th>Countdown</th>
+                </tr>
+            </thead>
+            <tbody id="hackathons"></tbody>
+        </table>
+    </section>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("assets/data/hackathons.yml")
+                .then(response => response.text())
+                .then(data => {
+                    const hackathons = jsyaml.load(data);
+                    displayHackathons(hackathons);
+                    setupFilters(hackathons);
+                });
+        });
+
+        function displayHackathons(hackathons) {
+            const hackathonList = document.getElementById("hackathons");
+            hackathonList.innerHTML = "";
+            hackathons.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+            hackathons.forEach(hackathon => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><a href="${hackathon.link}" target="_blank">${hackathon.name}</a></td>
+                    <td><span class="deadline" data-deadline="${hackathon.deadline}">${hackathon.deadline}</span></td>
+                    <td>${hackathon.location}</td>
+                    <td>${hackathon.tags.join(", ")}</td>
+                    <td class="countdown" data-deadline="${hackathon.deadline}"></td>
+                `;
+                tr.classList.add("hackathon-item");
+                tr.setAttribute("data-tags", hackathon.tags.join(" ").toLowerCase());
+                hackathonList.appendChild(tr);
             });
-    
-            function displayHackathons(hackathons) {
-                const hackathonList = document.getElementById("hackathons");
-                hackathonList.innerHTML = "";
-                hackathons.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-                hackathons.forEach(hackathon => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td><a href="${hackathon.link}" target="_blank">${hackathon.name}</a></td>
-                        <td><span class="deadline" data-deadline="${hackathon.deadline}">${hackathon.deadline}</span></td>
-                        <td>${hackathon.location}</td>
-                        <td>${hackathon.tags.join(", ")}</td>
-                        <td class="countdown" data-deadline="${hackathon.deadline}"></td>
-                    `;
-                    tr.classList.add("hackathon-item");
-                    hackathonList.appendChild(tr);
+            updateCountdowns();
+        }
+
+        function updateCountdowns() {
+            document.querySelectorAll(".countdown").forEach(el => {
+                const deadline = new Date(el.getAttribute("data-deadline"));
+                const now = new Date();
+                const timeDiff = deadline - now;
+                if (timeDiff < 0) {
+                    el.innerText = "Registration Closed";
+                    el.closest("tr").classList.add("expired");
+                } else {
+                    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                    el.innerText = `${days} days remaining`;
+                }
+            });
+        }
+
+        function setupFilters(hackathons) {
+            document.querySelectorAll(".filter-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const tag = this.getAttribute("data-tag");
+                    filterHackathons(tag);
                 });
-                updateCountdowns();
-            }
-    
-            function updateCountdowns() {
-                document.querySelectorAll(".countdown").forEach(el => {
-                    const deadline = new Date(el.getAttribute("data-deadline"));
-                    const now = new Date();
-                    const timeDiff = deadline - now;
-                    if (timeDiff < 0) {
-                        el.innerText = "Registration Closed";
-                        el.closest("tr").classList.add("expired");
-                    } else {
-                        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                        el.innerText = `${days} days remaining`;
-                    }
-                });
-            }
-        </script>
-    
-    
-    
+            });
+        }
+
+        function filterHackathons(tag) {
+            document.querySelectorAll("#hackathons tr").forEach(row => {
+                const hackathonTags = row.getAttribute("data-tags");
+                if (tag === "all" || hackathonTags.includes(tag.toLowerCase())) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+    </script>
 </body>
 </html>
+
