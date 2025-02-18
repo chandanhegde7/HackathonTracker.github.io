@@ -75,18 +75,26 @@
         }
 
         function updateCountdowns() {
-            document.querySelectorAll(".countdown").forEach(el => {
-                const deadline = new Date(el.getAttribute("data-deadline"));
-                const now = new Date();
-                const timeDiff = deadline - now;
-                if (timeDiff < 0) {
-                    el.innerText = "Registration Closed";
-                    el.closest("tr").classList.add("expired");
-                } else {
-                    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                    el.innerText = `${days} days remaining`;
-                }
-            });
+            function refreshCountdowns() {
+                document.querySelectorAll(".countdown").forEach(el => {
+                    const deadline = new Date(el.getAttribute("data-deadline"));
+                    const now = new Date();
+                    const timeDiff = deadline - now;
+                    
+                    if (timeDiff < 0) {
+                        el.innerText = "Registration Closed";
+                        el.closest("tr").classList.add("expired");
+                    } else {
+                        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                        el.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    }
+                });
+            }
+            refreshCountdowns();
+            setInterval(refreshCountdowns, 1000);
         }
 
         function setupFilters(hackathons) {
