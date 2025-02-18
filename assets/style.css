@@ -80,5 +80,8 @@ tr.expired {
 
 .countdown {
     font-weight: bold;
+    white-space: nowrap;
+    overflow: visible;
+    font-size: 14px;
     color: #dc3545;
 }
