@@ -1,0 +1,17 @@
+- name: "CyberClash 2025"
+  link: "https://cyberclash.com"
+  deadline: "2025-03-15T23:59:59"
+  tags: ["cybersecurity", "offline"]
+  location: "Bangalore, India"
+
+- name: "AI Innovators Challenge"
+  link: "https://ai-innovators.com"
+  deadline: "2025-04-10T23:59:59"
+  tags: ["ai/ml", "online"]
+  location: "Online"
+
+- name: "Hack The Future"
+  link: "https://hackthefuture.com"
+  deadline: "2025-05-01T23:59:59"
+  tags: ["general", "offline"]
+  location: "Mumbai, India"
